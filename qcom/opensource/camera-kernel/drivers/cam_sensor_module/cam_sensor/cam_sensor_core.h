@@ -9,6 +9,21 @@
 
 #include "cam_sensor_dev.h"
 
+#if IS_ENABLED(CONFIG_MIISP)
+/**
+ * @s_ctrl: Sensor ctrl structure
+ *
+ * This API powers up extra the camera sensor module
+ */
+int cam_sensor_power_up_extra(struct cam_sensor_ctrl_t *s_ctrl);
+/**
+ * @s_ctrl: Sensor ctrl structure
+ *
+ * This API powers down extra the camera sensor module
+ */
+int cam_sensor_power_down_extra(struct cam_sensor_ctrl_t *s_ctrl);
+#endif
+
 /**
  * @s_ctrl: Sensor ctrl structure
  *
@@ -97,5 +112,9 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl, void *arg);
  * This API handles the camera sensor close/shutdown
  */
 void cam_sensor_shutdown(struct cam_sensor_ctrl_t *s_ctrl);
+
+/* xiaomi add i2c_error_flag begin */
+void count_i2c_error(int mastertype);
+/* xiaomi add i2c_error_flag end */
 
 #endif /* _CAM_SENSOR_CORE_H_ */

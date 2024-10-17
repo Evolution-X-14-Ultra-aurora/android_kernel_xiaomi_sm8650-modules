@@ -48,6 +48,10 @@ enum cam_context_state {
 	CAM_CTX_STATE_MAX            = 6,
 };
 
+struct cam_ctx_sof_event_data {
+	uint64_t       timestamp;
+	uint64_t       boot_time;
+};
 /**
  * struct cam_ctx_request - Common request structure for the context
  *
@@ -89,6 +93,7 @@ struct cam_ctx_request {
 	struct cam_context            *ctx;
 	struct list_head               buf_tracker;
 	struct cam_hw_mgr_pf_request_info  pf_data;
+	struct cam_ctx_sof_event_data  sof_evt_data;
 };
 
 /**
@@ -274,6 +279,12 @@ struct cam_context {
 	cam_ctx_mini_dump_cb_func      mini_dump_cb;
 	int                            img_iommu_hdl;
 	struct timespec64              cdm_done_ts;
+	/*xiaomi added detect framerate begin*/
+	uint64_t                       dbg_timestamp;
+	uint64_t                       dbg_frame;
+	int32_t                        exlink;
+	uint32_t                       batchsize;
+	/*xiaomi added detect framerate end*/
 };
 
 /**

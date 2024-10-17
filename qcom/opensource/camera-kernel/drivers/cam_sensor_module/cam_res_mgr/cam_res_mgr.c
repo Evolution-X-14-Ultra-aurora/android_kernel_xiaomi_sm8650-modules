@@ -633,13 +633,8 @@ static void cam_res_mgr_gpio_free(struct device *dev, uint gpio)
 			pctrl_idx =
 				cam_res_mgr_util_get_idx_from_shared_pctrl_gpio(
 					gpio);
-			if (pctrl_idx >= 0) {
-				cam_res_mgr_shared_pinctrl_select_state(
-					pctrl_idx, false);
-			}
-			else {
-				CAM_ERR(CAM_RES, "Invalid PinCtrl Idx: %d", pctrl_idx);
-			}
+			cam_res_mgr_shared_pinctrl_select_state(
+				pctrl_idx, false);
 		}
 
 		CAM_DBG(CAM_RES, "freeing gpio: %u", gpio);
@@ -656,6 +651,17 @@ void cam_res_mgr_gpio_free_arry(struct device *dev,
 		cam_res_mgr_gpio_free(dev, (array[num]).gpio);
 }
 EXPORT_SYMBOL(cam_res_mgr_gpio_free_arry);
+
+int cam_res_mgr_gpio_get_value(unsigned int gpio)
+{
+	int rc = 0;
+	mutex_lock(&cam_res->gpio_res_lock);
+	rc = gpio_get_value_cansleep(gpio);
+	mutex_unlock(&cam_res->gpio_res_lock);
+
+	return rc;
+}
+EXPORT_SYMBOL(cam_res_mgr_gpio_get_value);
 
 int cam_res_mgr_gpio_set_value(unsigned int gpio, int value)
 {

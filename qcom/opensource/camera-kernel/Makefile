@@ -9,6 +9,14 @@ KBUILD_EXTRA_SYMBOLS := \
     $(OUT_DIR)/../sm8650-modules/qcom/opensource/mmrm-driver/Module.symvers \
     $(OUT_DIR)/../sm8650-modules/qcom/opensource/securemsm-kernel/Module.symvers
 
+# MIUI ADD: Camera_CameraSkyNet
+KBUILD_OPTIONS += MODNAME=cameralog
+# END Camera_CameraSkyNet
+
+# MIUI ADD: Camera_CamSched
+KBUILD_OPTIONS += MODNAME=mi_cam
+# END Camera_CamSched
+
 all: modules
 
 CAMERA_COMPILE_TIME = $(shell date)

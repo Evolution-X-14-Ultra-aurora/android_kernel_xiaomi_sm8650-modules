@@ -1849,6 +1849,7 @@ static int cam_sfe_top_handle_irq_bottom_half(
 	struct cam_sfe_path_data           *path_data = res->res_priv;
 	struct cam_sfe_top_priv            *top_priv = path_data->top_priv;
 	struct cam_sfe_top_irq_evt_payload *payload = evt_payload_priv;
+	struct cam_isp_hw_event_info        evt_info;
 
 	for (i = 0; i < CAM_SFE_IRQ_REGISTERS_MAX; i++)
 		irq_status[i] = payload->irq_reg_val[i];
@@ -1881,6 +1882,16 @@ static int cam_sfe_top_handle_irq_bottom_half(
 					true, path_data);
 
 			cam_sfe_top_dump_perf_counters("SOF", res->res_name, top_priv);
+
+			if (top_priv->event_cb) {
+				evt_info.hw_type = CAM_ISP_HW_TYPE_SFE;
+				evt_info.hw_idx   = res->hw_intf->hw_idx;
+				evt_info.res_id   = res->res_id;
+				evt_info.res_type = res->res_type;
+
+				top_priv->event_cb(top_priv->priv_per_stream,
+					CAM_ISP_HW_EVENT_SOF, (void *)&evt_info);
+			}
 		}
 
 		if (irq_status[0] &

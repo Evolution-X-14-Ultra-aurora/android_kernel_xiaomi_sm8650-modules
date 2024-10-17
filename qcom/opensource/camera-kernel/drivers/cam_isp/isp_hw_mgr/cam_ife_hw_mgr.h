@@ -333,6 +333,11 @@ struct cam_isp_comp_record_query {
  * @cdm_done_ts:            CDM callback done timestamp
  * @is_hw_ctx_acq:          If acquire for ife ctx is having hw ctx acquired
  * @acq_hw_ctxt_src_dst_map: Src to dst hw ctxt map for acquired pixel paths
+ * @pri_rdi_out_res:         Primary RDI res for RDI only cases
+ * add by xiaomi begin
+ * @crc_error_divisor:      Width/divisor pixels per line report crc errors will trigger
+ *                          internal recovery, only for CPHY
+ * add by xiaomi end
  *
  */
 struct cam_ife_hw_mgr_ctx {
@@ -394,13 +399,27 @@ struct cam_ife_hw_mgr_ctx {
 	uint32_t                                   curr_num_exp;
 	uint32_t                                   try_recovery_cnt;
 	uint64_t                                   recovery_req_id;
+	uint64_t                                   sof_timestamp;;
+	uint64_t                                   epoch_timestamp;
+	uint64_t                                   rdi1_sof_timestamp;
+	uint64_t                                   rdi2_sof_timestamp;
+	uint64_t                                   rdi1_sof_timestamp_shdr;
+	uint64_t                                   rdi2_sof_timestamp_shdr;
+	uint64_t                                   rdi4_sof_timestamp_shdr;
+	uint64_t                                   exposure_time;
 	uint32_t                                   drv_path_idle_en;
 	uint32_t                                   major_version;
 	struct cam_isp_context_comp_record        *vfe_bus_comp_grp;
 	struct cam_isp_context_comp_record        *sfe_bus_comp_grp;
 	struct timespec64                          cdm_done_ts;
 	bool                                       is_hw_ctx_acq;
+	uint32_t                                   last_mup;
+	uint64_t                                   mup_req_id;
 	uint32_t                                   acq_hw_ctxt_src_dst_map[CAM_ISP_MULTI_CTXT_MAX];
+	uint32_t                                   pri_rdi_out_res;
+	/*add by xiaomi begin*/
+	uint32_t                                   crc_error_divisor;
+	/*add by xiaomi end*/
 };
 
 /**
@@ -508,7 +527,7 @@ enum cam_isp_irq_inject_common_param_pos {
  * @debug_cfg              debug configuration
  * @ctx_lock               context lock
  * @hw_pid_support         hw pid support for this target
- * @csid_rup_en            Reg update at CSID side
+ * @csid_aup_rup_en        Reg update at CSID side
  * @csid_global_reset_en   CSID global reset enable
  * @csid_camif_irq_support CSID camif IRQ support
  * @cam_ddr_drv_support    DDR DRV support
@@ -541,12 +560,6 @@ struct cam_ife_hw_mgr {
 	struct cam_req_mgr_core_workq   *workq;
 	struct cam_ife_hw_mgr_debug      debug_cfg;
 	spinlock_t                       ctx_lock;
-	bool                             hw_pid_support;
-	bool                             csid_rup_en;
-	bool                             csid_global_reset_en;
-	bool                             csid_camif_irq_support;
-	bool                             cam_ddr_drv_support;
-	bool                             cam_clk_drv_support;
 	struct cam_isp_ife_sfe_hw_caps   isp_caps;
 	struct cam_isp_hw_path_port_map  path_port_map;
 
@@ -556,6 +569,12 @@ struct cam_ife_hw_mgr {
 	uint32_t                         isp_device_type;
 
 	struct cam_isp_irq_inject_param  irq_inject_param[MAX_INJECT_SET];
+	bool                             hw_pid_support;
+	bool                             csid_aup_rup_en;
+	bool                             csid_global_reset_en;
+	bool                             csid_camif_irq_support;
+	bool                             cam_ddr_drv_support;
+	bool                             cam_clk_drv_support;
 };
 
 /**

@@ -642,6 +642,16 @@ int cam_soc_util_irq_enable(struct cam_hw_soc_info *soc_info);
 int cam_soc_util_irq_disable(struct cam_hw_soc_info *soc_info);
 
 /**
+ * cam_soc_util_get_regulator_enable()
+ *
+ * @brief:              Enable single regulator
+ *
+ * @rgltr               Regulator that needs to be turned ON
+ * @return:             Success or failure
+ */
+int cam_soc_util_get_regulator_enable(struct regulator *rgltr);
+
+/**
  * cam_soc_util_regulator_enable()
  *
  * @brief:              Enable single regulator
@@ -798,10 +808,6 @@ int cam_soc_util_clk_enable_default(struct cam_hw_soc_info *soc_info, int cesta_
 
 int cam_soc_util_get_clk_level(struct cam_hw_soc_info *soc_info,
 	int64_t clk_rate, int clk_idx, int32_t *clk_lvl);
-
-unsigned long cam_soc_util_get_clk_rate_applied(
-	struct cam_hw_soc_info *soc_info, int32_t index, bool is_src,
-	enum cam_vote_level clk_level);
 
 /* Callback to get reg space data for specific HW */
 typedef int (*cam_soc_util_regspace_data_cb)(uint32_t reg_base_type,

@@ -556,7 +556,6 @@ static int cam_tfe_error_irq_bottom_half(
 	hw_info = core_info->tfe_hw_info;
 	evt_info.hw_idx = core_info->core_index;
 	evt_info.res_type = CAM_ISP_RESOURCE_TFE_IN;
-	evt_info.hw_type = CAM_ISP_HW_TYPE_TFE;
 
 	if (evt_payload->irq_reg_val[0] & hw_info->error_irq_mask[0]) {
 		err_evt_info.err_type = CAM_TFE_IRQ_STATUS_OVERFLOW;
@@ -3451,7 +3450,7 @@ int cam_tfe_process_cmd(void *hw_priv, uint32_t cmd_type,
 	case CAM_ISP_HW_CMD_STRIPE_UPDATE:
 	case CAM_ISP_HW_CMD_STOP_BUS_ERR_IRQ:
 	case CAM_ISP_HW_CMD_GET_WM_SECURE_MODE:
-	case CAM_ISP_HW_CMD_QUERY_CAP:
+	case CAM_ISP_HW_CMD_IS_CONSUMED_ADDR_SUPPORT:
 	case CAM_ISP_HW_CMD_GET_RES_FOR_MID:
 	case CAM_ISP_HW_CMD_DUMP_BUS_INFO:
 	case CAM_ISP_HW_CMD_IS_PDAF_RDI2_MUX_EN:
