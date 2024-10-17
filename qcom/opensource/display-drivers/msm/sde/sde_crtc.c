@@ -49,6 +49,10 @@
 #include "msm_drv.h"
 #include "sde_vm.h"
 
+#ifdef MI_DISPLAY_MODIFY
+#include "mi_sde_crtc.h"
+#endif
+
 #define SDE_PSTATES_MAX (SDE_STAGE_MAX * 4)
 #define SDE_MULTIRECT_PLANE_MAX (SDE_STAGE_MAX * 2)
 
@@ -976,7 +980,6 @@ static int _sde_crtc_set_roi_v1(struct drm_crtc_state *state,
 				roi_v1.num_rects);
 		return -EINVAL;
 	}
-
 	cstate->user_roi_list.roi_feature_flags = roi_v1.roi_feature_flags;
 	cstate->user_roi_list.num_rects = roi_v1.num_rects;
 	for (i = 0; i < roi_v1.num_rects; ++i) {
@@ -1000,6 +1003,17 @@ static int _sde_crtc_set_roi_v1(struct drm_crtc_state *state,
 				cstate->user_roi_list.roi[i].y1,
 				cstate->user_roi_list.roi[i].x2,
 				cstate->user_roi_list.roi[i].y2);
+		SDE_DEBUG("crtc%d: spr roi%d: spr roi (%d,%d) (%d,%d)\n",
+				DRMID(crtc), i,
+				cstate->user_roi_list.spr_roi[i].x1,
+				cstate->user_roi_list.spr_roi[i].y1,
+				cstate->user_roi_list.spr_roi[i].x2,
+				cstate->user_roi_list.spr_roi[i].y2);
+		SDE_EVT32_VERBOSE(DRMID(crtc),
+				cstate->user_roi_list.spr_roi[i].x1,
+				cstate->user_roi_list.spr_roi[i].y1,
+				cstate->user_roi_list.spr_roi[i].x2,
+				cstate->user_roi_list.spr_roi[i].y2);
 		SDE_DEBUG("crtc%d, roi_feature_flags %d: spr roi%d: spr roi (%d,%d) (%d,%d)\n",
 				DRMID(crtc), roi_v1.roi_feature_flags, i,
 				roi_v1.spr_roi[i].x1,
@@ -2667,6 +2681,35 @@ static void _sde_crtc_dest_scaler_setup(struct drm_crtc *crtc)
 				hw_ctl->ops.update_bitmask_mixer(
 						hw_ctl, hw_lm->idx, 1);
 		}
+	}
+}
+
+static void sde_crtc_disable_dest_scaler(struct drm_crtc *crtc)
+{
+	struct sde_crtc *sde_crtc;
+	struct sde_crtc_state *cstate;
+	struct sde_hw_mixer *hw_lm;
+	struct sde_hw_ctl *hw_ctl;
+	struct sde_hw_ds *hw_ds;
+	int lm_idx;
+
+	sde_crtc = to_sde_crtc(crtc);
+	cstate = to_sde_crtc_state(crtc->state);
+
+	if (!cstate->num_ds_enabled)
+		return;
+
+
+	for (lm_idx = 0; lm_idx < sde_crtc->num_mixers; lm_idx++) {
+		hw_lm  = sde_crtc->mixers[lm_idx].hw_lm;
+		hw_ctl = sde_crtc->mixers[lm_idx].hw_ctl;
+		hw_ds  = sde_crtc->mixers[lm_idx].hw_ds;
+		if (hw_ds && hw_ds->ops.disable_dest_scl)
+			hw_ds->ops.disable_dest_scl(hw_ds);
+
+		if (hw_lm && hw_ctl && hw_ctl->ops.update_bitmask_mixer)
+			hw_ctl->ops.update_bitmask_mixer(
+					hw_ctl, hw_lm->idx, 1);
 	}
 }
 
@@ -4506,7 +4549,6 @@ static void sde_crtc_atomic_flush_common(struct drm_crtc *crtc,
 	 */
 	if (unlikely(!sde_crtc->num_mixers))
 		return;
-
 	SDE_ATRACE_BEGIN("sde_crtc_atomic_flush");
 
 	/*
@@ -4862,9 +4904,13 @@ void sde_crtc_commit_kickoff(struct drm_crtc *crtc,
 	if (unlikely(!sde_crtc->num_mixers))
 		return;
 
+
 	SDE_ATRACE_BEGIN("crtc_commit");
 
 	idle_pc_state = sde_crtc_get_property(cstate, CRTC_PROP_IDLE_PC_STATE);
+#ifdef MI_DISPLAY_MODIFY
+	mi_sde_crtc_check_layer_flags(crtc);
+#endif
 
 	sde_crtc->kickoff_in_progress = true;
 	sde_crtc->handle_fence_error_bw_update = false;
@@ -4952,6 +4998,7 @@ void sde_crtc_commit_kickoff(struct drm_crtc *crtc,
 	}
 
 	SDE_ATRACE_END("crtc_commit");
+
 }
 
 /**
@@ -5301,8 +5348,8 @@ static void _sde_crtc_reset(struct drm_crtc *crtc)
 	/* mark mixer cfgs dirty before wiping them */
 	sde_crtc_clear_cached_mixer_cfg(crtc);
 
-	memset(sde_crtc->mixers, 0, sizeof(sde_crtc->mixers));
 	sde_crtc->num_mixers = 0;
+	memset(sde_crtc->mixers, 0, sizeof(sde_crtc->mixers));
 	sde_crtc->mixers_swapped = false;
 
 	/* disable clk & bw control until clk & bw properties are set */
@@ -8733,6 +8780,7 @@ static void sde_cp_crtc_apply_noise(struct drm_crtc *crtc,
 void sde_crtc_disable_cp_features(struct drm_crtc *crtc)
 {
 	sde_cp_disable_features(crtc);
+	sde_crtc_disable_dest_scaler(crtc);
 }
 
 void _sde_crtc_vm_release_notify(struct drm_crtc *crtc)

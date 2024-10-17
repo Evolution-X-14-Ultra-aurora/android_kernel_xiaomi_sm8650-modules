@@ -37,6 +37,7 @@
 #include <linux/msm_ion.h>
 #endif
 
+
 struct sg_table *msm_gem_prime_get_sg_table(struct drm_gem_object *obj)
 {
 	struct msm_gem_object *msm_obj = to_msm_bo(obj);

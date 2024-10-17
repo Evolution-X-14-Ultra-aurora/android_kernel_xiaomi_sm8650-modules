@@ -618,7 +618,6 @@ static void complete_commit(struct msm_commit *c)
 	struct drm_device *dev = state->dev;
 	struct msm_drm_private *priv = dev->dev_private;
 	struct msm_kms *kms = priv->kms;
-
 	drm_atomic_helper_wait_for_fences(dev, state, false);
 
 	kms->funcs->prepare_commit(kms, state);

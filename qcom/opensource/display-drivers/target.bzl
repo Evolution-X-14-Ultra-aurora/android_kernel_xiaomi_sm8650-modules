@@ -1,6 +1,7 @@
 load(":display_modules.bzl", "display_driver_modules")
 load(":display_driver_build.bzl", "define_target_variant_modules")
 load("//msm-kernel:target_variants.bzl", "get_all_la_variants", "get_all_le_variants", "get_all_lxc_variants")
+load(":display_drivers_auto/target_auto.bzl", "define_pineapple_auto")
 
 def define_pineapple(t, v):
     define_target_variant_modules(
@@ -29,6 +30,7 @@ def define_pineapple(t, v):
             "CONFIG_QTI_HW_FENCE",
             "CONFIG_QCOM_SPEC_SYNC",
             "CONFIG_MSM_EXT_DISPLAY",
+            "MI_DISPLAY_MODIFY",
         ],
 )
 
